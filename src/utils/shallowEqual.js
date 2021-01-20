@@ -1,4 +1,5 @@
 import deepEqual from 'deep-eql'
+import { isEmpty } from './is'
 
 const { hasOwnProperty } = Object.prototype
 
@@ -72,4 +73,28 @@ export default function(objA, objB, options = {}) {
   }
 
   return true
+}
+
+/**
+ * If the two parameters are equal, return true
+ * @param {array | void} ar1 array
+ * @param {array | void} ar2 array
+ */
+export function arrayEqual(ar1, ar2) {
+  // all null, return true
+  if (isEmpty(ar1) && isEmpty(ar2)) return true
+  // one of null, return false
+  if ((isEmpty(ar1) && !isEmpty(ar2)) || (isEmpty(ar2) && !isEmpty(ar1)) || ar1.length !== ar2.length) return false
+
+  let isEqual = true
+
+  ar1.some((elem, index) => {
+    if (ar2[index] !== elem) {
+      isEqual = false
+      return true
+    }
+    return false
+  })
+
+  return isEqual
 }

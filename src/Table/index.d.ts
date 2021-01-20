@@ -232,7 +232,7 @@ export interface TableProps {
    * 树形数据展开行，受控
    * default: none
    */
-  treeExpandKeys?: any[];
+  treeExpandKeys?: Array<string | number>;
 
   /**
    * expand row change, keys is expanded row keys

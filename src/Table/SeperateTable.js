@@ -5,7 +5,7 @@ import { PureComponent } from '../component'
 import { getProps } from '../utils/proptypes'
 import { setTranslate } from '../utils/dom/translate'
 import { range, split } from '../utils/numbers'
-import { compareColumns } from '../utils/shallowEqual'
+import { compareColumns, arrayEqual } from '../utils/shallowEqual'
 import { getParent } from '../utils/dom/element'
 import { tableClass } from '../styles'
 import Scroll from '../Scroll'
@@ -17,6 +17,7 @@ import { isNumber } from '../utils/is'
 import { Provider as AbsoluteProvider } from './context'
 import { CLASS_FIXED_LEFT, CLASS_FIXED_RIGHT } from './Td'
 import Sticky from '../Sticky'
+import { keysToArray } from '../utils/transform'
 
 class SeperateTable extends PureComponent {
   constructor(props) {
@@ -64,6 +65,10 @@ class SeperateTable extends PureComponent {
     if (!compareColumns(prevProps.columns, this.props.columns)) {
       this.resetWidth()
       this.setState({ colgroup: undefined })
+    }
+
+    if (!arrayEqual(keysToArray(prevProps.treeExpandKeys), keysToArray(this.props.treeExpandKeys))) {
+      this.needScrollToLast()
     }
   }
 
@@ -137,6 +142,13 @@ class SeperateTable extends PureComponent {
       if (scrollTop === this.state.scrollTop) this.forceUpdate()
       else this.setState({ scrollTop })
     }
+  }
+
+  needScrollToLast() {
+    const { data } = this.props
+    const { currentIndex } = this.state
+    // if current index out of data.length, just scroll to end
+    this.scrollToIndex(currentIndex >= data.length ? data.length : currentIndex)
   }
 
   checkScrollToIndex(index, outerHeight) {
@@ -269,10 +281,12 @@ class SeperateTable extends PureComponent {
 
   scrollToIndex(index, callback) {
     if (!this.$isMounted) return
+    const { fixed } = this.props
     if (index >= 1) index -= 1
     if (index < 0) index = 0
     const contentHeight = this.getContentHeight()
-    const outerHeight = getParent(this.realTbody, `.${tableClass('body')}`).clientHeight - 12
+    const outerHeight =
+      getParent(this.realTbody, `.${tableClass('body')}`).clientHeight - (fixed === 'x' || fixed === 'both' ? 12 : 0)
     let currentIndex = this.checkScrollToIndex(index, outerHeight)
     const sumHeight = this.getSumHeight(0, currentIndex)
     let scrollTop = sumHeight / contentHeight
